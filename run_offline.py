@@ -13,7 +13,7 @@ from utils.visualisation.plot import plot_results, save_results
 
 logging.basicConfig(level=logging.INFO)
 
-
+#Function that adds command-line arguments, self-explanatory
 def parse_args():
     parser = argparse.ArgumentParser(description='Evaluate network')
     parser.add_argument('--network', type=str,
@@ -40,35 +40,36 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    # Load image
+    
+    # Load image (Uses args to get rgb and depth path)
     logging.info('Loading image...')
     pic = Image.open(args.rgb_path, 'r')
     rgb = np.array(pic)
     pic = Image.open(args.depth_path, 'r')
-    depth = np.expand_dims(np.array(pic), axis=2)
+    depth = np.expand_dims(np.array(pic), axis=2) #What does this do?
 
-    # Load Network
+    # Load Network (loads the trained model file)
     logging.info('Loading model...')
     net = torch.load(args.network)
     logging.info('Done')
 
     # Get the compute device
-    device = get_device(args.force_cpu)
+    device = get_device(args.force_cpu) #Custom file (basic function that chooses GPU or CPU as processing device)
 
-    img_data = CameraData(include_depth=args.use_depth, include_rgb=args.use_rgb)
+    img_data = CameraData(include_depth=args.use_depth, include_rgb=args.use_rgb) #Custom class that parses image
 
-    x, depth_img, rgb_img = img_data.get_data(rgb=rgb, depth=depth)
+    x, depth_img, rgb_img = img_data.get_data(rgb=rgb, depth=depth) #Get transformed/processed images and Pytorch tensor
 
     with torch.no_grad():
-        xc = x.to(device)
-        pred = net.predict(xc)
+        xc = x.to(device) #Pytorch magic? converts tensor to tensor with device?
+        pred = net.predict(xc) #Where the magic happens, runs the network on the tensor
 
-        q_img, ang_img, width_img = post_process_output(pred['pos'], pred['cos'], pred['sin'], pred['width'])
+        q_img, ang_img, width_img = post_process_output(pred['pos'], pred['cos'], pred['sin'], pred['width']) #Custom class, gets the three images
 
         if args.save:
             save_results(
-                rgb_img=img_data.get_rgb(rgb, False),
-                depth_img=np.squeeze(img_data.get_depth(depth)),
+                rgb_img=img_data.get_rgb(rgb, False), #Gets non-normalized RGB image
+                depth_img=np.squeeze(img_data.get_depth(depth)), #Gets depth image, why squeeze?
                 grasp_q_img=q_img,
                 grasp_angle_img=ang_img,
                 no_grasps=args.n_grasps,
