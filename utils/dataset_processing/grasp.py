@@ -4,8 +4,11 @@ from skimage.draw import polygon
 from skimage.feature import peak_local_max
 
 
-def _gr_text_to_no(l, offset=(0, 0)):
+def _gr_text_to_no(l, offset=(0, 0)): 
     """
+    In: "256.31 319.7"
+    Out: [319,256]
+
     Transform a single point from a Cornell file line to a pair of ints.
     :param l: Line from Cornell grasp file (str)
     :param offset: Offset to apply to point positions
@@ -14,7 +17,7 @@ def _gr_text_to_no(l, offset=(0, 0)):
     x, y = l.split()
     return [int(round(float(y))) - offset[0], int(round(float(x))) - offset[1]]
 
-
+#Grasp Rectangles Class
 class GraspRectangles:
     """
     Convenience class for loading and operating on sets of Grasp Rectangles.
@@ -192,7 +195,7 @@ class GraspRectangles:
         points = [gr.points for gr in self.grs]
         return np.mean(np.vstack(points), axis=0).astype(np.int)
 
-
+#GraspRectangle class, the most common 
 class GraspRectangle:
     """
     Representation of a grasp in the common "Grasp Rectangle" format.
